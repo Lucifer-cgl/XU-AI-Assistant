@@ -1,0 +1,41 @@
+#xu-ai-assistant-trigger {
+  position: fixed;
+  right: 22px;
+  bottom: 24px;
+  z-index: 2147483646;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, #b9653b 68%, #17211d);
+  border-radius: 50%;
+  background: #17211d;
+  color: #f7f4ed;
+  box-shadow: 0 12px 34px rgba(23, 33, 29, .22);
+  font: 700 22px/1 "Noto Serif SC", "Songti SC", STSong, serif;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+#xu-ai-assistant-trigger:hover,
+#xu-ai-assistant-trigger:focus-visible {
+  transform: translateY(-2px);
+  background: #0b6b4f;
+  box-shadow: 0 16px 38px rgba(11, 107, 79, .28);
+  outline: 3px solid rgba(11, 107, 79, .18);
+}
+
+#xu-ai-assistant-trigger[data-error="true"] {
+  background: #b9653b;
+  animation: xu-ai-shake .3s ease;
+}
+
+@keyframes xu-ai-shake {
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@media print {
+  #xu-ai-assistant-trigger { display: none !important; }
+}

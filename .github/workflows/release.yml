@@ -1,0 +1,41 @@
+name: Package extension
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate source
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('manifest.json')); JSON.parse(require('fs').readFileSync('version.json'))"
+          node --check background.js
+          node --check content.js
+          node --check panel/panel.js
+      - name: Build ZIP
+        run: |
+          mkdir -p package/panel
+          cp manifest.json background.js content.js content.css version.json package/
+          cp panel/index.html panel/styles.css panel/panel.js package/panel/
+          cd package
+          zip -r ../XU-AI-Assistant-${GITHUB_REF_NAME:-manual}.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XU-AI-Assistant
+          path: XU-AI-Assistant-*.zip
+      - name: Attach ZIP to release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" XU-AI-Assistant-*.zip --generate-notes

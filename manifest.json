@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "墟 · AI Assistant",
+  "short_name": "XU-AI",
+  "version": "0.1.0",
+  "description": "在 XU 阅读页面旁调用你已登录的 AI 账号，并安全传递当前章节、全文或选中内容。",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "tabs",
+    "windows"
+  ],
+  "host_permissions": [
+    "https://xu.lucifer-cgl.workers.dev/*",
+    "https://raw.githubusercontent.com/Lucifer-cgl/XU-AI-Assistant/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "打开墟 · AI Assistant"
+  },
+  "side_panel": {
+    "default_path": "panel/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://xu.lucifer-cgl.workers.dev/*"],
+      "css": ["content.css"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

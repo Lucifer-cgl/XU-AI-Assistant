@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>墟 · AI Assistant</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="brand-header">
+      <span class="brand-mark" aria-hidden="true">墟</span>
+      <div>
+        <strong>AI Assistant</strong>
+        <small>使用你已有的 AI 账号</small>
+      </div>
+    </header>
+
+    <main>
+      <section class="notice" id="environment-notice" aria-live="polite"></section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <small>01 · 阅读范围</small>
+            <h1>交给 AI 的内容</h1>
+          </div>
+          <button id="refresh-context" class="quiet-button" type="button">刷新</button>
+        </div>
+
+        <div class="segmented" role="radiogroup" aria-label="选择读取范围">
+          <label><input type="radio" name="mode" value="selection" /><span>选中内容</span></label>
+          <label><input type="radio" name="mode" value="section" checked /><span>当前章节</span></label>
+          <label><input type="radio" name="mode" value="full" /><span>整篇文章</span></label>
+        </div>
+
+        <div id="context-status" class="context-status">正在读取 XU 页面…</div>
+        <textarea id="context-preview" rows="8" readonly aria-label="即将发送给 AI 的文章内容"></textarea>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <small>02 · 提问</small>
+            <h2>你想了解什么？</h2>
+          </div>
+        </div>
+        <textarea id="question" rows="4" placeholder="例如：用更直观的例子解释这一节，并指出最容易混淆的概念。"></textarea>
+        <label class="tile-option"><input id="tile-window" type="checkbox" checked /> 与 XU 并排打开 AI 窗口</label>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <small>03 · 选择服务</small>
+            <h2>使用已登录账号</h2>
+          </div>
+        </div>
+        <div class="provider-grid" id="provider-grid"></div>
+        <p class="privacy-note">扩展只把整理好的内容复制到剪贴板并打开官网。账号、密码和对话记录均由对应 AI 官网管理，扩展不保存。</p>
+      </section>
+
+      <section class="footer-actions">
+        <button id="check-update" class="quiet-button" type="button">检查更新</button>
+        <a href="https://github.com/Lucifer-cgl/XU-AI-Assistant" target="_blank" rel="noreferrer">项目与帮助</a>
+        <span id="version-label"></span>
+      </section>
+      <div id="toast" role="status" aria-live="polite"></div>
+    </main>
+
+    <script src="panel.js"></script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+:root {
+  color-scheme: light dark;
+  --paper: #f7f4ed;
+  --surface: #fffdf8;
+  --ink: #17211d;
+  --muted: #68736d;
+  --line: #d9ddd7;
+  --accent: #0b6b4f;
+  --accent-soft: #dcece5;
+  --warm: #b9653b;
+  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { min-width: 320px; margin: 0; background: var(--paper); color: var(--ink); }
+button, textarea, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+.brand-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 91%, transparent);
+  backdrop-filter: blur(14px);
+}
+.brand-header strong, .brand-header small { display: block; }
+.brand-header strong { font-family: Georgia, "Noto Serif SC", serif; letter-spacing: .02em; }
+.brand-header small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+.brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 20px/1 Georgia, "Noto Serif SC", serif; }
+
+main { display: grid; gap: 12px; padding: 14px 14px 24px; }
+.notice { padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: color-mix(in srgb, var(--accent-soft) 54%, var(--surface)); font-size: 11px; line-height: 1.6; }
+.card { padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: 0 12px 30px rgba(31, 45, 38, .05); }
+.section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.section-heading small { color: var(--accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }
+h1, h2 { margin: 3px 0 0; font: 700 17px/1.35 Georgia, "Noto Serif SC", serif; }
+
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 11px; background: var(--paper); }
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+.segmented span { display: block; padding: 7px 4px; border-radius: 8px; color: var(--muted); font-size: 11px; text-align: center; cursor: pointer; }
+.segmented input:checked + span { background: var(--surface); color: var(--accent); box-shadow: 0 2px 10px rgba(31, 45, 38, .08); font-weight: 700; }
+.context-status { min-height: 21px; margin: 11px 1px 5px; color: var(--muted); font-size: 10px; }
+textarea { width: 100%; resize: vertical; padding: 10px 11px; border: 1px solid var(--line); border-radius: 10px; outline: none; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.55; }
+textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-soft) 70%, transparent); }
+#context-preview { color: var(--muted); }
+.tile-option { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 11px; }
+.tile-option input { accent-color: var(--accent); }
+
+.provider-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.provider-button { display: grid; gap: 2px; min-width: 0; padding: 11px; border: 1px solid var(--line); border-radius: 11px; background: var(--paper); color: var(--ink); text-align: left; cursor: pointer; }
+.provider-button:hover, .provider-button:focus-visible { border-color: var(--accent); background: var(--accent-soft); outline: none; }
+.provider-button strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.provider-button small { color: var(--muted); font-size: 9px; }
+.privacy-note { margin: 12px 0 0; color: var(--muted); font-size: 10px; line-height: 1.65; }
+
+.quiet-button, .footer-actions a { padding: 6px 9px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-size: 10px; text-decoration: none; cursor: pointer; }
+.quiet-button:hover, .footer-actions a:hover { border-color: var(--accent); color: var(--accent); }
+.footer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 3px 2px; }
+#version-label { margin-left: auto; color: var(--muted); font-size: 9px; }
+#toast { position: fixed; right: 14px; bottom: 14px; max-width: calc(100% - 28px); padding: 9px 12px; border-radius: 9px; background: var(--ink); color: var(--paper); font-size: 11px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+#toast.visible { opacity: 1; transform: translateY(0); }
+
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #111815; --surface: #18211d; --ink: #edf3ef; --muted: #a5b1aa; --line: #33413a; --accent: #70d1ad; --accent-soft: #233d33; }
+}
