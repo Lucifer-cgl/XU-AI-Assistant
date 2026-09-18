@@ -2,12 +2,13 @@
   "manifest_version": 3,
   "name": "墟 · AI Assistant",
   "short_name": "XU-AI",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "在 XU 阅读页面旁调用你已登录的 AI 账号，并安全传递当前章节、全文或选中内容。",
   "minimum_chrome_version": "116",
   "permissions": [
     "sidePanel",
     "storage",
+    "system.display",
     "tabs",
     "windows"
   ],

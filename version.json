@@ -1,5 +1,5 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.3",
   "downloadUrl": "https://github.com/Lucifer-cgl/XU-AI-Assistant/archive/refs/heads/main.zip",
-  "releaseNotes": "统一 XU-AI Assistant 侧边栏与文本框滚动条：细圆角、透明轨道，并随明暗主题自动配色。"
+  "releaseNotes": "按当前显示器可用区域自动把 XU 调整到左侧约 70%、AI 官网放到右侧约 30%，避免窗口互相遮挡；关闭 AI 后恢复 XU 原窗口状态。"
 }

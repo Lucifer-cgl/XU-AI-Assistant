@@ -60,11 +60,13 @@ async function openProviderWindow(url, tile) {
   if (parsedUrl.protocol !== "https:") throw new Error("仅允许打开 HTTPS AI 官网");
 
   const source = await chrome.windows.getCurrent();
-  const canTile = tile && Number.isFinite(source.width) && source.width >= 1000;
+  const workArea = await getWindowWorkArea(source);
+  const canTile = tile && workArea.width >= 1280 && workArea.height >= 680;
   const assistantWidth = canTile
-    ? Math.max(460, Math.min(620, Math.floor(source.width * 0.38)))
+    ? Math.max(460, Math.min(760, Math.floor(workArea.width * 0.3)))
     : 520;
-  const assistantHeight = Math.max(620, (source.height || 780) - 24);
+  const xuWidth = canTile ? workArea.width - assistantWidth : source.width;
+  const assistantHeight = canTile ? workArea.height : Math.max(620, (source.height || 780) - 24);
   let sourceBounds = null;
 
   if (canTile) {
@@ -78,10 +80,10 @@ async function openProviderWindow(url, tile) {
       await chrome.windows.update(source.id, { state: "normal" });
     }
     await chrome.windows.update(source.id, {
-      left: source.left,
-      top: source.top,
-      width: source.width - assistantWidth,
-      height: source.height
+      left: workArea.left,
+      top: workArea.top,
+      width: xuWidth,
+      height: workArea.height
     });
   }
 
@@ -92,8 +94,8 @@ async function openProviderWindow(url, tile) {
       focused: true,
       width: assistantWidth,
       height: assistantHeight,
-      left: canTile ? source.left + source.width - assistantWidth : undefined,
-      top: canTile ? source.top : undefined
+      left: canTile ? workArea.left + xuWidth : undefined,
+      top: canTile ? workArea.top : undefined
     });
 
     if (sourceBounds && popup.id) {
@@ -109,5 +111,27 @@ async function openProviderWindow(url, tile) {
       else await chrome.windows.update(source.id, sourceBounds);
     }
     throw error;
+  }
+}
+
+async function getWindowWorkArea(source) {
+  const fallback = {
+    left: source.left || 0,
+    top: source.top || 0,
+    width: source.width || 1366,
+    height: source.height || 768
+  };
+
+  try {
+    const displays = await chrome.system.display.getInfo();
+    const centerX = fallback.left + fallback.width / 2;
+    const centerY = fallback.top + fallback.height / 2;
+    const display = displays.find(({ bounds }) =>
+      centerX >= bounds.left && centerX < bounds.left + bounds.width &&
+      centerY >= bounds.top && centerY < bounds.top + bounds.height
+    ) || displays.find(({ isPrimary }) => isPrimary) || displays[0];
+    return display?.workArea || fallback;
+  } catch {
+    return fallback;
   }
 }
