@@ -8,10 +8,17 @@
   --accent: #0b6b4f;
   --accent-soft: #dcece5;
   --warm: #b9653b;
+  --scrollbar-thumb: color-mix(in srgb, var(--accent) 38%, var(--line));
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--accent) 68%, var(--line));
   font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
+* { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { border: 1px solid transparent; border-radius: 999px; background: var(--scrollbar-thumb); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); background-clip: padding-box; }
 body { min-width: 320px; margin: 0; background: var(--paper); color: var(--ink); }
 button, textarea, input { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }

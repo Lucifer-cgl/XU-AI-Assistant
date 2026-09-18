@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "downloadUrl": "https://github.com/Lucifer-cgl/XU-AI-Assistant/archive/refs/heads/main.zip",
-  "releaseNotes": "支持拖动并记住墟入口位置；打开助手时默认收起本文目录但允许手动展开；增加内容和提问复制按钮；改进并排窗口恢复。"
+  "releaseNotes": "统一 XU-AI Assistant 侧边栏与文本框滚动条：细圆角、透明轨道，并随明暗主题自动配色。"
 }
