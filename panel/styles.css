@@ -37,6 +37,7 @@ main { display: grid; gap: 12px; padding: 14px 14px 24px; }
 .notice { padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: color-mix(in srgb, var(--accent-soft) 54%, var(--surface)); font-size: 11px; line-height: 1.6; }
 .card { padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: 0 12px 30px rgba(31, 45, 38, .05); }
 .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.heading-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 .section-heading small { color: var(--accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }
 h1, h2 { margin: 3px 0 0; font: 700 17px/1.35 Georgia, "Noto Serif SC", serif; }
 

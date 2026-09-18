@@ -29,11 +29,14 @@ async function init() {
     if (radio) radio.checked = true;
   }
   if (typeof saved.tileWindow === "boolean") tileWindow.checked = saved.tileWindow;
+  await collapseXuToc();
   await refreshContext();
 }
 
 document.querySelector("#refresh-context").addEventListener("click", refreshContext);
 document.querySelector("#check-update").addEventListener("click", checkForUpdates);
+document.querySelector("#copy-context").addEventListener("click", copyContext);
+document.querySelector("#copy-question").addEventListener("click", copyQuestion);
 document.querySelectorAll('input[name="mode"]').forEach((radio) => {
   radio.addEventListener("change", async () => {
     await chrome.storage.local.set({ contextMode: radio.value });
@@ -51,6 +54,36 @@ function renderProviders() {
     button.addEventListener("click", () => launchProvider(provider));
     return button;
   }));
+}
+
+async function collapseXuToc() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id && tab.url?.startsWith("https://xu.lucifer-cgl.workers.dev/")) {
+      await chrome.tabs.sendMessage(tab.id, { type: "COLLAPSE_XU_TOC" });
+    }
+  } catch {
+    // 页面可能仍在加载；目录是否收起不应阻止助手使用。
+  }
+}
+
+async function copyContext() {
+  if (!activeContext?.content) {
+    showToast("当前没有可复制的文章内容");
+    return;
+  }
+  await navigator.clipboard.writeText(activeContext.content);
+  showToast("文章内容已复制");
+}
+
+async function copyQuestion() {
+  const text = question.value.trim();
+  if (!text) {
+    showToast("请先填写问题");
+    return;
+  }
+  await navigator.clipboard.writeText(text);
+  showToast("提问已复制");
 }
 
 function renderEnvironmentNotice() {

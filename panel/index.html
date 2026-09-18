@@ -24,7 +24,10 @@
             <small>01 · 阅读范围</small>
             <h1>交给 AI 的内容</h1>
           </div>
-          <button id="refresh-context" class="quiet-button" type="button">刷新</button>
+          <div class="heading-actions">
+            <button id="copy-context" class="quiet-button" type="button">复制内容</button>
+            <button id="refresh-context" class="quiet-button" type="button">刷新</button>
+          </div>
         </div>
 
         <div class="segmented" role="radiogroup" aria-label="选择读取范围">
@@ -43,6 +46,7 @@
             <small>02 · 提问</small>
             <h2>你想了解什么？</h2>
           </div>
+          <button id="copy-question" class="quiet-button" type="button">复制提问</button>
         </div>
         <textarea id="question" rows="4" placeholder="例如：用更直观的例子解释这一节，并指出最容易混淆的概念。"></textarea>
         <label class="tile-option"><input id="tile-window" type="checkbox" checked /> 与 XU 并排打开 AI 窗口</label>

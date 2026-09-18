@@ -34,7 +34,11 @@ chrome.windows.onRemoved.addListener(async (windowId) => {
   await chrome.storage.session.remove(key);
 
   try {
-    await chrome.windows.update(record.sourceWindowId, record.bounds);
+    if (record.state && record.state !== "normal") {
+      await chrome.windows.update(record.sourceWindowId, { state: record.state });
+    } else {
+      await chrome.windows.update(record.sourceWindowId, record.bounds);
+    }
   } catch {
     // 原窗口可能已被用户关闭，不需要继续恢复。
   }
@@ -70,6 +74,9 @@ async function openProviderWindow(url, tile) {
       width: source.width,
       height: source.height
     };
+    if (source.state !== "normal") {
+      await chrome.windows.update(source.id, { state: "normal" });
+    }
     await chrome.windows.update(source.id, {
       left: source.left,
       top: source.top,
@@ -91,13 +98,16 @@ async function openProviderWindow(url, tile) {
 
     if (sourceBounds && popup.id) {
       await chrome.storage.session.set({
-        [layoutKey(popup.id)]: { sourceWindowId: source.id, bounds: sourceBounds }
+        [layoutKey(popup.id)]: { sourceWindowId: source.id, bounds: sourceBounds, state: source.state }
       });
     }
 
     return { tiled: canTile };
   } catch (error) {
-    if (sourceBounds) await chrome.windows.update(source.id, sourceBounds);
+    if (sourceBounds) {
+      if (source.state && source.state !== "normal") await chrome.windows.update(source.id, { state: source.state });
+      else await chrome.windows.update(source.id, sourceBounds);
+    }
     throw error;
   }
 }
