@@ -39,6 +39,26 @@
   box-shadow: 0 18px 42px rgba(11, 107, 79, .32);
 }
 
+#xu-ai-assistant-trigger[data-collapsed="left"] {
+  left: -31px !important;
+  right: auto !important;
+  opacity: .72;
+  border-radius: 0 999px 999px 0;
+}
+
+#xu-ai-assistant-trigger[data-collapsed="right"] {
+  left: auto !important;
+  right: -31px !important;
+  opacity: .72;
+  border-radius: 999px 0 0 999px;
+}
+
+#xu-ai-assistant-trigger[data-collapsed]:hover,
+#xu-ai-assistant-trigger[data-collapsed]:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+
 @keyframes xu-ai-shake {
   25% { transform: translateX(-3px); }
   75% { transform: translateX(3px); }

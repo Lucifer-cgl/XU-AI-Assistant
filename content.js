@@ -1,6 +1,7 @@
 const BUTTON_ID = "xu-ai-assistant-trigger";
 const MAX_CONTEXT_LENGTH = 30000;
 const POSITION_KEY = "triggerPosition";
+const COLLAPSED_KEY = "triggerCollapsed";
 const DRAG_THRESHOLD = 5;
 
 installTrigger();
@@ -24,6 +25,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return false;
 });
 
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type !== "PANEL_STATE") return false;
+  const button = document.getElementById(BUTTON_ID);
+  if (button) setPanelState(button, Boolean(message.open));
+  sendResponse({ ok: true });
+  return false;
+});
+
 function installTrigger() {
   if (document.getElementById(BUTTON_ID)) return;
 
@@ -35,37 +44,60 @@ function installTrigger() {
   button.textContent = "墟";
   let dragged = false;
   let dragResetTimer = null;
+  let preferredPosition = null;
 
-  restoreTriggerPosition(button);
+  restoreTriggerPosition(button, (position) => { preferredPosition = position; });
+  restoreCollapsedState(button);
   setupTriggerDragging(button, () => {
     dragged = true;
     window.clearTimeout(dragResetTimer);
     dragResetTimer = window.setTimeout(() => { dragged = false; }, 500);
+  }, {
+    getPreferredPosition: () => preferredPosition,
+    setPreferredPosition: (position) => { preferredPosition = position; }
   });
   button.addEventListener("click", () => {
     if (dragged) {
       dragged = false;
       return;
     }
-    chrome.runtime.sendMessage({ type: "OPEN_SIDE_PANEL" }, (response) => {
+    if (button.dataset.collapsed) {
+      setCollapsedState(button, false);
+      return;
+    }
+    const nextOpen = button.dataset.panelOpen !== "true";
+    chrome.runtime.sendMessage({ type: nextOpen ? "OPEN_SIDE_PANEL" : "CLOSE_SIDE_PANEL" }, (response) => {
       if (chrome.runtime.lastError || !response?.ok) {
         button.dataset.error = "true";
-        button.title = "请点击浏览器工具栏中的扩展图标打开";
+        button.title = nextOpen ? "请点击浏览器工具栏中的扩展图标打开" : "当前浏览器不允许网页按钮关闭侧边栏";
         window.setTimeout(() => delete button.dataset.error, 1800);
+        return;
       }
+      setPanelState(button, nextOpen);
     });
+  });
+  button.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    setCollapsedState(button, !button.dataset.collapsed);
   });
   document.body.append(button);
 }
 
-async function restoreTriggerPosition(button) {
+async function restoreTriggerPosition(button, setPreferredPosition) {
   const saved = await chrome.storage.local.get(POSITION_KEY);
   const position = saved[POSITION_KEY];
   if (!position) return;
+  setPreferredPosition(position);
   placeTrigger(button, position.x * window.innerWidth, position.y * window.innerHeight);
 }
 
-function setupTriggerDragging(button, markDragged) {
+async function restoreCollapsedState(button) {
+  const saved = await chrome.storage.local.get(COLLAPSED_KEY);
+  const state = saved[COLLAPSED_KEY];
+  if (state?.collapsed) applyCollapsedState(button, state.edge || "right");
+}
+
+function setupTriggerDragging(button, markDragged, positionStore) {
   let pointerId = null;
   let startX = 0;
   let startY = 0;
@@ -93,6 +125,7 @@ function setupTriggerDragging(button, markDragged) {
     isDragging = true;
     markDragged();
     button.dataset.dragging = "true";
+    if (button.dataset.collapsed) setCollapsedState(button, false);
     placeTrigger(button, originLeft + deltaX, originTop + deltaY);
   });
 
@@ -103,20 +136,21 @@ function setupTriggerDragging(button, markDragged) {
     delete button.dataset.dragging;
     if (!isDragging) return;
     const rect = button.getBoundingClientRect();
-    await chrome.storage.local.set({
-      [POSITION_KEY]: {
-        x: rect.left / window.innerWidth,
-        y: rect.top / window.innerHeight
-      }
-    });
+    const position = {
+      x: rect.left / window.innerWidth,
+      y: rect.top / window.innerHeight
+    };
+    positionStore.setPreferredPosition(position);
+    await chrome.storage.local.set({ [POSITION_KEY]: position });
   };
 
   button.addEventListener("pointerup", finish);
   button.addEventListener("pointercancel", finish);
   window.addEventListener("resize", () => {
-    if (!button.style.left) return;
-    const rect = button.getBoundingClientRect();
-    placeTrigger(button, rect.left, rect.top);
+    if (button.dataset.collapsed) return;
+    const position = positionStore.getPreferredPosition();
+    if (!position) return;
+    placeTrigger(button, position.x * window.innerWidth, position.y * window.innerHeight);
   });
 }
 
@@ -130,6 +164,34 @@ function placeTrigger(button, requestedLeft, requestedTop) {
   button.style.top = `${top}px`;
   button.style.right = "auto";
   button.style.bottom = "auto";
+}
+
+function setPanelState(button, open) {
+  if (open) {
+    button.dataset.panelOpen = "true";
+    button.title = "关闭墟 · AI Assistant；右键可缩到边缘";
+  } else {
+    delete button.dataset.panelOpen;
+    button.title = "打开墟 · AI Assistant；右键可缩到边缘";
+  }
+}
+
+function setCollapsedState(button, collapsed) {
+  if (!collapsed) {
+    delete button.dataset.collapsed;
+    chrome.storage.local.set({ [COLLAPSED_KEY]: { collapsed: false } });
+    button.title = button.dataset.panelOpen === "true" ? "关闭墟 · AI Assistant；右键可缩到边缘" : "打开墟 · AI Assistant；右键可缩到边缘";
+    return;
+  }
+  const rect = button.getBoundingClientRect();
+  const edge = rect.left + rect.width / 2 < window.innerWidth / 2 ? "left" : "right";
+  applyCollapsedState(button, edge);
+  chrome.storage.local.set({ [COLLAPSED_KEY]: { collapsed: true, edge } });
+}
+
+function applyCollapsedState(button, edge) {
+  button.dataset.collapsed = edge;
+  button.title = "墟 · AI Assistant 已缩到边缘；左键或右键恢复";
 }
 
 function collectContext(mode = "section") {

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.6",
   "downloadUrl": "https://github.com/Lucifer-cgl/XU-AI-Assistant/archive/refs/heads/main.zip",
-  "releaseNotes": "新增豆包入口，并继续支持 Cloudflare 与国内入口 https://lucifer.gicp.fun/ 两个 XU 站点。"
+  "releaseNotes": "修复圆形入口在窗口缩放后位置漂移的问题；入口支持右键缩到屏幕边缘，并尝试支持再次点击关闭助手侧栏。"
 }

@@ -16,6 +16,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "CLOSE_SIDE_PANEL") {
+    closeSidePanel().then(() => sendResponse({ ok: true })).catch((error) => {
+      sendResponse({ ok: false, error: error.message });
+    });
+    return true;
+  }
+
+  if (message?.type === "PANEL_OPENED" || message?.type === "PANEL_CLOSED") {
+    notifyActiveXuTab({ type: "PANEL_STATE", open: message.type === "PANEL_OPENED" });
+    return false;
+  }
+
   if (message?.type === "OPEN_PROVIDER") {
     openProviderWindow(message.url, message.tile !== false)
       .then((result) => sendResponse({ ok: true, ...result }))
@@ -53,6 +65,20 @@ async function openSidePanel(sender) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) throw new Error("没有找到当前页面");
   await chrome.sidePanel.open({ tabId: tab.id });
+}
+
+async function closeSidePanel() {
+  await chrome.runtime.sendMessage({ type: "CLOSE_PANEL_VIEW" });
+}
+
+async function notifyActiveXuTab(message) {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) return;
+    await chrome.tabs.sendMessage(tab.id, message);
+  } catch {
+    // 当前活动页可能不是 XU，忽略即可。
+  }
 }
 
 async function openProviderWindow(url, tile) {

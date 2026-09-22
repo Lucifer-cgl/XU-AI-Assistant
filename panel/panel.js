@@ -22,7 +22,18 @@ let toastTimer = null;
 
 init();
 
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type !== "CLOSE_PANEL_VIEW") return false;
+  window.close();
+  return false;
+});
+
+window.addEventListener("pagehide", () => {
+  chrome.runtime.sendMessage({ type: "PANEL_CLOSED" });
+});
+
 async function init() {
+  chrome.runtime.sendMessage({ type: "PANEL_OPENED" });
   const version = chrome.runtime.getManifest().version;
   versionLabel.textContent = `v${version}`;
   renderEnvironmentNotice();
