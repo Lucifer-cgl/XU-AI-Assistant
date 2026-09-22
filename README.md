@@ -2,9 +2,9 @@
 
 > 墟 · AI Assistant：让 XU 知识库和你已经登录的 AI 账号同时留在桌面上。
 
-当前版本：`0.1.3`
+当前版本：`0.1.5`
 
-[XU 知识库](https://xu.lucifer-cgl.workers.dev/) 是一个无需后端与数据库的静态课程知识平台。XU-AI-Assistant 是它的可选浏览器扩展：读取访客当前正在浏览的 XU 内容，整理成可控的学习提示词，再打开访客自己选择并已经登录的 AI 官网。
+[XU 知识库](https://xu.lucifer-cgl.workers.dev/) 是一个无需后端与数据库的静态课程知识平台。国内访问入口为 <https://lucifer.gicp.fun/>。XU-AI-Assistant 是它的可选浏览器扩展：读取访客当前正在浏览的 XU 内容，整理成可控的学习提示词，再打开访客自己选择并已经登录的 AI 官网。
 
 它不是新的 AI 品牌，不代理模型，不提供共享账号，也不要求 API Key。
 
@@ -16,7 +16,7 @@
 - 允许用户先预览将要交给 AI 的文字，再决定是否继续。
 - 打开助手时默认收起本文目录，但保留分栏图标供用户随时重新展开。
 - 为文章内容和用户提问分别提供复制按钮。
-- 支持 ChatGPT、Gemini、DeepSeek 和通义千问。
+- 支持 ChatGPT、Gemini、DeepSeek、通义千问和豆包。
 - 将组合提示词复制到剪贴板，并用独立窗口打开 AI 官网。
 - 宽屏设备按当前显示器可用区域自动排列为 XU 左侧约 70%、AI 右侧约 30%；关闭 AI 后恢复 XU 原窗口状态。
 - 根据浏览器语言和时区给出大陆/海外网络提示，但不采集精确位置。
@@ -39,7 +39,7 @@ AI 官网通常禁止被第三方网页直接嵌入，普通 XU 页面也不能�
 2. Chrome 打开 `chrome://extensions`；Edge 打开 `edge://extensions`。
 3. 开启“开发者模式”。
 4. 点击“加载已解压的扩展”，选择包含 `manifest.json` 的目录。
-5. 打开 [XU](https://xu.lucifer-cgl.workers.dev/) 的任意文章，点击右下角“墟”。
+5. 打开 [XU](https://xu.lucifer-cgl.workers.dev/) 或 [国内入口](https://lucifer.gicp.fun/) 的任意文章，点击右下角“墟”。
 
 完整说明见 [安装与使用](docs/安装与使用.md)。
 
@@ -51,7 +51,7 @@ AI 官网通常禁止被第三方网页直接嵌入，普通 XU 页面也不能�
 
 ## 隐私与安全边界
 
-- 扩展只在 `xu.lucifer-cgl.workers.dev` 注入入口和读取正文。
+- 扩展只在 `xu.lucifer-cgl.workers.dev` 和 `lucifer.gicp.fun` 注入入口和读取正文。
 - 文章内容只在用户点击某个 AI 服务时写入本机剪贴板。
 - 扩展不会读取 AI 官网密码、Cookie 或对话历史。
 - AI 官网的可用性、账号政策和内容处理规则由对应服务商决定。
@@ -84,7 +84,7 @@ XU-AI-Assistant/
 
 ## 路线图
 
-- `0.1.x`：上下文读取、并排窗口、四个 AI 服务、手动更新检查。
+- `0.1.x`：上下文读取、并排窗口、常用 AI 服务入口、手动更新检查。
 - `0.2.x`：自定义提示词模板、引用来源格式、快捷键。
 - `0.3.x`：在权限透明的前提下评估可选的网站适配器。
 
@@ -92,6 +92,7 @@ XU-AI-Assistant/
 
 - XU 仓库：<https://github.com/Lucifer-cgl/XU>
 - XU 在线站点：<https://xu.lucifer-cgl.workers.dev/>
+- XU 国内入口：<https://lucifer.gicp.fun/>
 
 ## 许可证
 

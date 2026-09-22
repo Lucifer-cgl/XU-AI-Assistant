@@ -2,7 +2,12 @@ const providers = [
   { id: "chatgpt", name: "ChatGPT", note: "OpenAI · 全球", url: "https://chatgpt.com/" },
   { id: "gemini", name: "Gemini", note: "Google · 海外网络", url: "https://gemini.google.com/app" },
   { id: "deepseek", name: "DeepSeek", note: "中国大陆友好", url: "https://chat.deepseek.com/" },
-  { id: "qwen", name: "通义千问", note: "中国大陆友好", url: "https://chat.qwen.ai/" }
+  { id: "qwen", name: "通义千问", note: "中国大陆友好", url: "https://chat.qwen.ai/" },
+  { id: "doubao", name: "豆包", note: "字节跳动 · 中国大陆友好", url: "https://www.doubao.com/chat/" }
+];
+const xuOrigins = [
+  "https://xu.lucifer-cgl.workers.dev",
+  "https://lucifer.gicp.fun"
 ];
 
 const preview = document.querySelector("#context-preview");
@@ -59,7 +64,7 @@ function renderProviders() {
 async function collapseXuToc() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id && tab.url?.startsWith("https://xu.lucifer-cgl.workers.dev/")) {
+    if (tab?.id && isXuUrl(tab.url)) {
       await chrome.tabs.sendMessage(tab.id, { type: "COLLAPSE_XU_TOC" });
     }
   } catch {
@@ -91,7 +96,7 @@ function renderEnvironmentNotice() {
   const language = navigator.language || "未知语言";
   const likelyMainland = timezone === "Asia/Shanghai" && /^zh(-CN)?/i.test(language);
   document.querySelector("#environment-notice").textContent = likelyMainland
-    ? `环境提示：当前浏览器更接近中国大陆环境（${timezone}）。可优先尝试 DeepSeek 或通义千问；ChatGPT、Gemini 是否可用取决于你的实际网络。`
+    ? `环境提示：当前浏览器更接近中国大陆环境（${timezone}）。可优先尝试 DeepSeek、通义千问或豆包；ChatGPT、Gemini 是否可用取决于你的实际网络。`
     : `环境提示：当前浏览器更接近海外或非中文环境（${timezone}）。可优先尝试 ChatGPT 或 Gemini；各服务能否访问仍以你的实际网络为准。`;
 }
 
@@ -102,7 +107,7 @@ async function refreshContext() {
 
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id || !tab.url?.startsWith("https://xu.lucifer-cgl.workers.dev/")) {
+    if (!tab?.id || !isXuUrl(tab.url)) {
       throw new Error("请先在当前窗口打开一篇 XU 文章");
     }
 
@@ -115,6 +120,10 @@ async function refreshContext() {
     activeContext = null;
     status.textContent = error.message;
   }
+}
+
+function isXuUrl(url) {
+  return xuOrigins.some((origin) => url?.startsWith(`${origin}/`));
 }
 
 async function launchProvider(provider) {
