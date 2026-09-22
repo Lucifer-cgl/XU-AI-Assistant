@@ -5,19 +5,11 @@ const providers = [
   { id: "qwen", name: "通义千问", note: "中国大陆友好", url: "https://chat.qwen.ai/" },
   { id: "doubao", name: "豆包", note: "字节跳动 · 中国大陆友好", url: "https://www.doubao.com/chat/" }
 ];
-const xuOrigins = [
-  "https://xu.lucifer-cgl.workers.dev",
-  "https://lucifer.gicp.fun"
-];
 
-const preview = document.querySelector("#context-preview");
-const status = document.querySelector("#context-status");
-const question = document.querySelector("#question");
 const tileWindow = document.querySelector("#tile-window");
 const providerGrid = document.querySelector("#provider-grid");
 const versionLabel = document.querySelector("#version-label");
 const toast = document.querySelector("#toast");
-let activeContext = null;
 let toastTimer = null;
 
 init();
@@ -39,26 +31,11 @@ async function init() {
   renderEnvironmentNotice();
   renderProviders();
 
-  const saved = await chrome.storage.local.get(["contextMode", "tileWindow"]);
-  if (saved.contextMode) {
-    const radio = document.querySelector(`input[name="mode"][value="${saved.contextMode}"]`);
-    if (radio) radio.checked = true;
-  }
+  const saved = await chrome.storage.local.get(["tileWindow"]);
   if (typeof saved.tileWindow === "boolean") tileWindow.checked = saved.tileWindow;
-  await collapseXuToc();
-  await refreshContext();
 }
 
-document.querySelector("#refresh-context").addEventListener("click", refreshContext);
 document.querySelector("#check-update").addEventListener("click", checkForUpdates);
-document.querySelector("#copy-context").addEventListener("click", copyContext);
-document.querySelector("#copy-question").addEventListener("click", copyQuestion);
-document.querySelectorAll('input[name="mode"]').forEach((radio) => {
-  radio.addEventListener("change", async () => {
-    await chrome.storage.local.set({ contextMode: radio.value });
-    await refreshContext();
-  });
-});
 tileWindow.addEventListener("change", () => chrome.storage.local.set({ tileWindow: tileWindow.checked }));
 
 function renderProviders() {
@@ -72,36 +49,6 @@ function renderProviders() {
   }));
 }
 
-async function collapseXuToc() {
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id && isXuUrl(tab.url)) {
-      await chrome.tabs.sendMessage(tab.id, { type: "COLLAPSE_XU_TOC" });
-    }
-  } catch {
-    // 页面可能仍在加载；目录是否收起不应阻止助手使用。
-  }
-}
-
-async function copyContext() {
-  if (!activeContext?.content) {
-    showToast("当前没有可复制的文章内容");
-    return;
-  }
-  await navigator.clipboard.writeText(activeContext.content);
-  showToast("文章内容已复制");
-}
-
-async function copyQuestion() {
-  const text = question.value.trim();
-  if (!text) {
-    showToast("请先填写问题");
-    return;
-  }
-  await navigator.clipboard.writeText(text);
-  showToast("提问已复制");
-}
-
 function renderEnvironmentNotice() {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "未知时区";
   const language = navigator.language || "未知语言";
@@ -111,66 +58,18 @@ function renderEnvironmentNotice() {
     : `环境提示：当前浏览器更接近海外或非中文环境（${timezone}）。可优先尝试 ChatGPT 或 Gemini；各服务能否访问仍以你的实际网络为准。`;
 }
 
-async function refreshContext() {
-  const mode = document.querySelector('input[name="mode"]:checked').value;
-  status.textContent = "正在读取 XU 页面…";
-  preview.value = "";
-
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id || !isXuUrl(tab.url)) {
-      throw new Error("请先在当前窗口打开一篇 XU 文章");
-    }
-
-    const response = await chrome.tabs.sendMessage(tab.id, { type: "GET_XU_CONTEXT", mode });
-    if (!response?.ok) throw new Error(response?.error || "读取失败");
-    activeContext = response.context;
-    preview.value = activeContext.content;
-    status.textContent = `${activeContext.label} · ${activeContext.content.length.toLocaleString()} 字符${activeContext.truncated ? " · 已截取前 30,000 字符" : ""}`;
-  } catch (error) {
-    activeContext = null;
-    status.textContent = error.message;
-  }
-}
-
-function isXuUrl(url) {
-  return xuOrigins.some((origin) => url?.startsWith(`${origin}/`));
-}
-
 async function launchProvider(provider) {
-  if (!activeContext) {
-    showToast("请先成功读取 XU 文章内容");
-    return;
-  }
-
-  const prompt = buildPrompt();
   try {
-    await navigator.clipboard.writeText(prompt);
     const response = await chrome.runtime.sendMessage({
       type: "OPEN_PROVIDER",
       url: provider.url,
       tile: tileWindow.checked
     });
     if (!response?.ok) throw new Error(response?.error || "无法打开 AI 官网");
-    showToast(`内容已复制，请在 ${provider.name} 中粘贴发送`);
+    showToast(`已打开 ${provider.name}`);
   } catch (error) {
     showToast(error.message);
   }
-}
-
-function buildPrompt() {
-  const userQuestion = question.value.trim() || "请解释这段内容的核心概念，给出清晰的学习框架，并指出容易混淆的地方。";
-  return [
-    "你是我的学习助手。请仅根据下面提供的学习资料回答；资料不足时请明确说明，不要虚构。",
-    `文章：${activeContext.title}`,
-    `范围：${activeContext.label}`,
-    `来源：${activeContext.url}`,
-    "",
-    `我的问题：${userQuestion}`,
-    "",
-    "学习资料：",
-    activeContext.content
-  ].join("\n");
 }
 
 async function checkForUpdates() {

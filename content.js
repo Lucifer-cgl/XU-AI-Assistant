@@ -1,29 +1,9 @@
 const BUTTON_ID = "xu-ai-assistant-trigger";
-const MAX_CONTEXT_LENGTH = 30000;
 const POSITION_KEY = "triggerPosition";
 const COLLAPSED_KEY = "triggerCollapsed";
 const DRAG_THRESHOLD = 5;
 
 installTrigger();
-
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message?.type !== "GET_XU_CONTEXT") return false;
-
-  try {
-    sendResponse({ ok: true, context: collectContext(message.mode) });
-  } catch (error) {
-    sendResponse({ ok: false, error: error.message });
-  }
-  return false;
-});
-
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message?.type !== "COLLAPSE_XU_TOC") return false;
-  const toggle = document.querySelector("#right-panel-toggle");
-  if (toggle?.getAttribute("aria-expanded") === "true") toggle.click();
-  sendResponse({ ok: true });
-  return false;
-});
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type !== "PANEL_STATE") return false;
@@ -66,10 +46,12 @@ function installTrigger() {
       return;
     }
     const nextOpen = button.dataset.panelOpen !== "true";
-    chrome.runtime.sendMessage({ type: nextOpen ? "OPEN_SIDE_PANEL" : "CLOSE_SIDE_PANEL" }, (response) => {
-      if (chrome.runtime.lastError || !response?.ok) {
+    safeSendMessage({ type: nextOpen ? "OPEN_SIDE_PANEL" : "CLOSE_SIDE_PANEL" }, (response) => {
+      if (!response?.ok) {
         button.dataset.error = "true";
-        button.title = nextOpen ? "请点击浏览器工具栏中的扩展图标打开" : "当前浏览器不允许网页按钮关闭侧边栏";
+        button.title = response?.needsRefresh
+          ? "扩展已重新加载，请刷新当前 XU 页面"
+          : nextOpen ? "请点击浏览器工具栏中的扩展图标打开" : "当前浏览器不允许网页按钮关闭侧边栏";
         window.setTimeout(() => delete button.dataset.error, 1800);
         return;
       }
@@ -84,7 +66,7 @@ function installTrigger() {
 }
 
 async function restoreTriggerPosition(button, setPreferredPosition) {
-  const saved = await chrome.storage.local.get(POSITION_KEY);
+  const saved = await safeStorageGet(POSITION_KEY);
   const position = saved[POSITION_KEY];
   if (!position) return;
   setPreferredPosition(position);
@@ -92,7 +74,7 @@ async function restoreTriggerPosition(button, setPreferredPosition) {
 }
 
 async function restoreCollapsedState(button) {
-  const saved = await chrome.storage.local.get(COLLAPSED_KEY);
+  const saved = await safeStorageGet(COLLAPSED_KEY);
   const state = saved[COLLAPSED_KEY];
   if (state?.collapsed) applyCollapsedState(button, state.edge || "right");
 }
@@ -141,7 +123,7 @@ function setupTriggerDragging(button, markDragged, positionStore) {
       y: rect.top / window.innerHeight
     };
     positionStore.setPreferredPosition(position);
-    await chrome.storage.local.set({ [POSITION_KEY]: position });
+    await safeStorageSet({ [POSITION_KEY]: position });
   };
 
   button.addEventListener("pointerup", finish);
@@ -179,14 +161,14 @@ function setPanelState(button, open) {
 function setCollapsedState(button, collapsed) {
   if (!collapsed) {
     delete button.dataset.collapsed;
-    chrome.storage.local.set({ [COLLAPSED_KEY]: { collapsed: false } });
+    safeStorageSet({ [COLLAPSED_KEY]: { collapsed: false } });
     button.title = button.dataset.panelOpen === "true" ? "关闭墟 · AI Assistant；右键可缩到边缘" : "打开墟 · AI Assistant；右键可缩到边缘";
     return;
   }
   const rect = button.getBoundingClientRect();
   const edge = rect.left + rect.width / 2 < window.innerWidth / 2 ? "left" : "right";
   applyCollapsedState(button, edge);
-  chrome.storage.local.set({ [COLLAPSED_KEY]: { collapsed: true, edge } });
+  safeStorageSet({ [COLLAPSED_KEY]: { collapsed: true, edge } });
 }
 
 function applyCollapsedState(button, edge) {
@@ -194,53 +176,37 @@ function applyCollapsedState(button, edge) {
   button.title = "墟 · AI Assistant 已缩到边缘；左键或右键恢复";
 }
 
-function collectContext(mode = "section") {
-  const article = document.querySelector(".article");
-  if (!article) throw new Error("当前页面没有可读取的 XU 正文");
-
-  const selection = window.getSelection()?.toString().trim() || "";
-  let content = "";
-  let label = "当前章节";
-
-  if (mode === "selection") {
-    if (!selection) throw new Error("请先在正文中选择一段文字");
-    content = selection;
-    label = "选中内容";
-  } else if (mode === "full") {
-    content = article.innerText;
-    label = "整篇文章";
-  } else {
-    content = getCurrentSection(article);
+function safeSendMessage(message, callback) {
+  try {
+    chrome.runtime.sendMessage(message, (response) => {
+      if (chrome.runtime.lastError) {
+        callback({ ok: false, needsRefresh: isExtensionContextInvalidated(chrome.runtime.lastError) });
+        return;
+      }
+      callback(response);
+    });
+  } catch (error) {
+    callback({ ok: false, needsRefresh: isExtensionContextInvalidated(error), error: error.message });
   }
-
-  const normalized = content.replace(/\n{3,}/g, "\n\n").trim();
-  return {
-    title: document.querySelector(".article h1")?.textContent?.trim() || document.title,
-    url: location.href,
-    label,
-    content: normalized.slice(0, MAX_CONTEXT_LENGTH),
-    truncated: normalized.length > MAX_CONTEXT_LENGTH
-  };
 }
 
-function getCurrentSection(article) {
-  const headings = [...article.querySelectorAll("h2, h3, h4, h5, h6")];
-  if (!headings.length) return article.innerText;
-
-  const anchorLine = 180;
-  let current = headings[0];
-  for (const heading of headings) {
-    if (heading.getBoundingClientRect().top <= anchorLine) current = heading;
+async function safeStorageGet(key) {
+  try {
+    return await chrome.storage.local.get(key);
+  } catch (error) {
+    if (isExtensionContextInvalidated(error)) return {};
+    throw error;
   }
+}
 
-  const level = Number(current.tagName.slice(1));
-  const parts = [current.textContent.trim()];
-  let node = current.nextElementSibling;
-  while (node) {
-    if (/^H[2-6]$/.test(node.tagName) && Number(node.tagName.slice(1)) <= level) break;
-    const text = node.innerText?.trim();
-    if (text) parts.push(text);
-    node = node.nextElementSibling;
+async function safeStorageSet(value) {
+  try {
+    await chrome.storage.local.set(value);
+  } catch (error) {
+    if (!isExtensionContextInvalidated(error)) throw error;
   }
-  return parts.join("\n\n");
+}
+
+function isExtensionContextInvalidated(error) {
+  return /Extension context invalidated/i.test(String(error?.message || error));
 }

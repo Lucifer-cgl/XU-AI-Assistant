@@ -44,18 +44,9 @@ main { display: grid; gap: 12px; padding: 14px 14px 24px; }
 .notice { padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: color-mix(in srgb, var(--accent-soft) 54%, var(--surface)); font-size: 11px; line-height: 1.6; }
 .card { padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: 0 12px 30px rgba(31, 45, 38, .05); }
 .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
-.heading-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 .section-heading small { color: var(--accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }
 h1, h2 { margin: 3px 0 0; font: 700 17px/1.35 Georgia, "Noto Serif SC", serif; }
 
-.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 11px; background: var(--paper); }
-.segmented input { position: absolute; opacity: 0; pointer-events: none; }
-.segmented span { display: block; padding: 7px 4px; border-radius: 8px; color: var(--muted); font-size: 11px; text-align: center; cursor: pointer; }
-.segmented input:checked + span { background: var(--surface); color: var(--accent); box-shadow: 0 2px 10px rgba(31, 45, 38, .08); font-weight: 700; }
-.context-status { min-height: 21px; margin: 11px 1px 5px; color: var(--muted); font-size: 10px; }
-textarea { width: 100%; resize: vertical; padding: 10px 11px; border: 1px solid var(--line); border-radius: 10px; outline: none; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.55; }
-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-soft) 70%, transparent); }
-#context-preview { color: var(--muted); }
 .tile-option { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 11px; }
 .tile-option input { accent-color: var(--accent); }
 

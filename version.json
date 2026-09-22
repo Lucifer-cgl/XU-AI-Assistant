@@ -1,5 +1,5 @@
 {
-  "version": "0.1.6",
+  "version": "0.2.0",
   "downloadUrl": "https://github.com/Lucifer-cgl/XU-AI-Assistant/archive/refs/heads/main.zip",
-  "releaseNotes": "修复圆形入口在窗口缩放后位置漂移的问题；入口支持右键缩到屏幕边缘，并尝试支持再次点击关闭助手侧栏。"
+  "releaseNotes": "重构为轻量 AI 快捷启动器：不再读取正文、组织提示词或复制内容，只负责打开常用 AI 官网并与 XU 自动并排。"
 }
